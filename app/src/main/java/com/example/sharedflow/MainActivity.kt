@@ -11,12 +11,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.sharedflow.presentation.WeatherScreen
 import com.example.sharedflow.ui.theme.SharedFlowTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 //Flows - cold (does not emit until something is collecting)
 //StateFlow - requires an initial value, hot (always emits value), only stores most recent value
 //SharedFlow - does not require an initial value, hot, configurable replay
 //Channels - unicast (one-to-one), hot, events are queued and then discarded
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,10 +28,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SharedFlowTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    WeatherScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
