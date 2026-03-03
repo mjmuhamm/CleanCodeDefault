@@ -59,7 +59,6 @@ fun WeatherScreen(modifier: Modifier = Modifier,
                 label = { Text("Enter city name..") },
                 modifier = Modifier.fillMaxWidth()
             )
-
             LazyColumn(
                 modifier = Modifier
                     .heightIn(max = 200.dp)
