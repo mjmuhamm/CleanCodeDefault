@@ -8,6 +8,7 @@ import com.example.sharedflow.domain.WeatherState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -48,6 +49,47 @@ class WeatherViewModel @Inject constructor(
         if (query.length < 3) {
             viewModelScope.launch { _citySuggestions.emit(emptyList()) }
             return
+        }
+
+        searchJob = viewModelScope.launch {
+            delay(500) // debounce timer
+            repository.searchCity(query).onSuccess { cities ->
+                _citySuggestions.emit(cities)
+            }.onFailure {
+                _errorEvents.send("Network Error: Check your connection!")
+            }
+        }
+    }
+
+    fun onCitySelected(city: City) {
+        viewModelScope.launch {
+            _citySuggestions.emit(emptyList())
+
+            val displayName = city.name
+
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    selectedCityName = displayName
+                ) }
+
+            repository.fetchWeather(city.latitude, city.longitude)
+                .onSuccess { weather ->
+                    _uiState.update {
+                        it.copy(
+                            data = weather,
+                            isLoading = false
+                        )
+                    }
+                }
+                .onFailure {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false
+                        )
+                    }
+                    _errorEvents.send("Failed to load weather for ${displayName}")
+                }
         }
     }
 }
